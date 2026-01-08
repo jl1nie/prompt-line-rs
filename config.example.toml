@@ -1,0 +1,32 @@
+# prompt-line-rs configuration
+# Copy this file to:
+#   Windows: %APPDATA%\prompt-line-rs\config.toml
+#   Linux:   ~/.config/prompt-line-rs/config.toml
+
+[shortcuts]
+# Global hotkey to launch the input window
+# Options: "Alt+Space", "Win+Shift+Space", "Ctrl+Shift+Space"
+launch = "Alt+Space"
+
+# Hotkey to paste text and close window
+paste = "Ctrl+Enter"
+
+# Hotkey to close window without pasting
+close = "Escape"
+
+[history]
+# Maximum number of history entries to keep
+max_entries = 1000
+
+# History file location (uses default if not specified)
+# file = "~/.prompt-line-rs/history.jsonl"
+
+[window]
+# Window width in pixels
+width = 400
+
+# Window height in pixels
+height = 200
+
+# Window opacity (0.0 - 1.0)
+opacity = 0.95

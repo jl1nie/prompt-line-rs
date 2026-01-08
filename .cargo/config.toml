@@ -1,0 +1,8 @@
+# Cross-compilation settings for Windows target from Linux/WSL
+
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+# Uncomment to set Windows as the default target
+# [build]
+# target = "x86_64-pc-windows-gnu"

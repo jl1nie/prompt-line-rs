@@ -1,0 +1,28 @@
+[package]
+name = "prompt-line-rs"
+version = "0.1.0"
+edition = "2021"
+description = "A floating text input tool - Quick launch with global hotkey, type text, and quick paste"
+license = "MIT"
+repository = "https://github.com/minoru/prompt-line-rs"
+keywords = ["clipboard", "hotkey", "productivity"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+eframe = "0.29"
+arboard = "3.4"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+directories = "5.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+lto = true
+strip = true
