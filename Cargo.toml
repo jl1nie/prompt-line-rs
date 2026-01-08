@@ -9,18 +9,21 @@ keywords = ["clipboard", "hotkey", "productivity"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-eframe = "0.29"
 arboard = "3.4"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 toml = "0.8"
 directories = "5.0"
 chrono = { version = "0.4", features = ["serde"] }
+tinyfiledialogs = "3.9"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = [
     "Win32_Foundation",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Controls",
+    "Win32_Graphics_Gdi",
 ] }
 
 [profile.release]
