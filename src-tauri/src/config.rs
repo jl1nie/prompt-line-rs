@@ -18,14 +18,29 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Shortcuts {
+    /// Global hotkey to show/hide window (Cmd+Shift+Space on Mac)
     #[serde(default = "default_launch")]
     pub launch: String,
 
+    /// Paste text and close window (Cmd+Enter on Mac)
     #[serde(default = "default_paste")]
     pub paste: String,
 
+    /// Close window without pasting
     #[serde(default = "default_close")]
     pub close: String,
+
+    /// Navigate to next history item
+    #[serde(default = "default_history_next")]
+    pub history_next: String,
+
+    /// Navigate to previous history item
+    #[serde(default = "default_history_prev")]
+    pub history_prev: String,
+
+    /// Open search/filter
+    #[serde(default = "default_search")]
+    pub search: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,12 +61,15 @@ pub struct WindowConfig {
     pub font_size: f32,
 }
 
-// Default values
+// Default values (matching prompt-line)
 fn default_shortcuts() -> Shortcuts {
     Shortcuts {
-        launch: "Alt+Space".to_string(),
-        paste: "Ctrl+Enter".to_string(),
+        launch: "Ctrl+Shift+Space".to_string(),  // Cmd+Shift+Space on Mac
+        paste: "Ctrl+Enter".to_string(),          // Cmd+Enter on Mac
         close: "Escape".to_string(),
+        history_next: "Ctrl+j".to_string(),
+        history_prev: "Ctrl+k".to_string(),
+        search: "Ctrl+f".to_string(),             // Cmd+f on Mac
     }
 }
 
@@ -62,13 +80,13 @@ fn default_history() -> HistoryConfig {
 fn default_window() -> WindowConfig {
     WindowConfig {
         width: 600.0,
-        height: 400.0,
+        height: 300.0,  // prompt-line default
         font_size: 16.0,
     }
 }
 
 fn default_launch() -> String {
-    "Alt+Space".to_string()
+    "Ctrl+Shift+Space".to_string()
 }
 
 fn default_paste() -> String {
@@ -77,6 +95,18 @@ fn default_paste() -> String {
 
 fn default_close() -> String {
     "Escape".to_string()
+}
+
+fn default_history_next() -> String {
+    "Ctrl+j".to_string()
+}
+
+fn default_history_prev() -> String {
+    "Ctrl+k".to_string()
+}
+
+fn default_search() -> String {
+    "Ctrl+f".to_string()
 }
 
 fn default_max_entries() -> usize {

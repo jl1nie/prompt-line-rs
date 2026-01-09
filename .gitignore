@@ -1,9 +1,11 @@
 # Build artifacts
 /target
+/dist
+/release
+src-tauri/target
 
-# Windows executables
-*.exe
-*.pdb
+# Dependencies
+node_modules
 
 # IDE
 .idea/
@@ -14,3 +16,7 @@
 # OS
 .DS_Store
 Thumbs.db
+nul
+
+# Logs
+*.log

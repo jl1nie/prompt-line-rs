@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>prompt-line-rs</title>
+  <link rel="stylesheet" href="/src-frontend/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header with history title and search -->
+    <header class="history-header">
+      <div class="history-title">
+        History
+        <span class="shortcuts-hint"><kbd>Ctrl</kbd>+<kbd>j</kbd>/<kbd>k</kbd></span>
+      </div>
+      <div class="search-container" id="search-container">
+        <input type="text" id="history-search" placeholder="Search history..." class="hidden">
+        <button id="btn-search" class="search-btn" title="Search (Ctrl+F)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- History list (always visible) -->
+    <section id="history-section">
+      <ul id="history-list"></ul>
+    </section>
+
+    <!-- Text input area -->
+    <main>
+      <textarea
+        id="input-text"
+        placeholder="Type your text here..."
+        autofocus
+      ></textarea>
+      <div class="button-bar">
+        <button id="btn-paste" class="primary">Paste <kbd>Ctrl+Enter</kbd></button>
+        <button id="btn-clear">Clear</button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/src-frontend/main.ts"></script>
+</body>
+</html>

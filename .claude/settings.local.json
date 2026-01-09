@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo check:*)",
+      "Bash(cargo build:*)",
+      "Bash(./target/release/prompt-line-rs.exe:*)",
+      "Bash(taskkill:*)",
+      "Bash(tokei:*)",
+      "Bash(wc:*)",
+      "Bash(tasklist:*)",
+      "Bash(cargo clean:*)",
+      "Bash(pnpm create:*)",
+      "Bash(npm create tauri-app@latest:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tauri icon --help:*)",
+      "Bash(npm run tauri:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(start \"\" \"./target/release/prompt-line-rs.exe\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\minor\\\\src\\\\prompt-line-rs\\\\src-tauri\\\\target\\\\release\\\\prompt-line-rs.exe\")",
+      "Bash(git add:*)"
+    ]
+  }
+}
