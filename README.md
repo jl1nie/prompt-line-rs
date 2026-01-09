@@ -18,7 +18,7 @@ A floating text input tool for Windows, inspired by [prompt-line](https://github
 
 ### Installer (Recommended)
 
-Download from the [releases](https://github.com/minoru/prompt-line-rs/releases) page:
+Download from the [releases](https://github.com/jl1nie/prompt-line-rs/releases) page:
 
 - **`prompt-line-rs_x.x.x_x64-setup.exe`** - NSIS installer (recommended)
 - **`prompt-line-rs_x.x.x_x64_en-US.msi`** - MSI installer
@@ -31,7 +31,7 @@ Download `prompt-line-rs.exe` and run directly. No installation required.
 
 ```bash
 # Clone the repository
-git clone https://github.com/minoru/prompt-line-rs.git
+git clone https://github.com/jl1nie/prompt-line-rs.git
 cd prompt-line-rs
 
 # Install dependencies
