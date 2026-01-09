@@ -1,5 +1,7 @@
 # prompt-line-rs
 
+English | [日本語](README.ja.md)
+
 A floating text input tool for Windows, inspired by [prompt-line](https://github.com/nkmr-jp/prompt-line). Quickly launch with a global hotkey, type your text, and paste it to any application with a single keystroke.
 
 ## Features
