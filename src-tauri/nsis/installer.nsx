@@ -1,0 +1,21 @@
+; Custom NSIS script for prompt-line-rs
+; Adds startup registry entry, start menu shortcut, and removes desktop shortcut
+
+!macro NSIS_HOOK_POSTINSTALL
+  ; Add to Windows startup (current user)
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "prompt-line-rs" "$INSTDIR\${MAINBINARYNAME}.exe"
+
+  ; Create start menu shortcut
+  CreateShortcut "$SMPROGRAMS\${PRODUCTNAME}.lnk" "$INSTDIR\${MAINBINARYNAME}.exe"
+
+  ; Remove desktop shortcut if it exists
+  Delete "$DESKTOP\${PRODUCTNAME}.lnk"
+!macroend
+
+!macro NSIS_HOOK_POSTUNINSTALL
+  ; Remove from Windows startup
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "prompt-line-rs"
+
+  ; Remove start menu shortcut
+  Delete "$SMPROGRAMS\${PRODUCTNAME}.lnk"
+!macroend
