@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - prompt-line-rs</title>
+  <link rel="stylesheet" href="/src-frontend/settings.css">
+</head>
+<body>
+  <div id="settings-app">
+    <h1>Settings</h1>
+
+    <!-- Window Settings -->
+    <section class="settings-section">
+      <h2>Window</h2>
+      <div class="setting-item">
+        <label for="window-width">Width (px)</label>
+        <input type="number" id="window-width" min="300" max="1200" step="50">
+      </div>
+      <div class="setting-item">
+        <label for="window-height">Height (px)</label>
+        <input type="number" id="window-height" min="200" max="800" step="50">
+      </div>
+      <div class="setting-item">
+        <label for="font-size">Font Size (px)</label>
+        <input type="number" id="font-size" min="10" max="24" step="1">
+      </div>
+    </section>
+
+    <!-- History Settings -->
+    <section class="settings-section">
+      <h2>History</h2>
+      <div class="setting-item">
+        <label for="max-entries">Maximum Entries</label>
+        <input type="number" id="max-entries" min="100" max="10000" step="100">
+      </div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="settings-section">
+      <h2>Shortcuts</h2>
+      <p class="hint">Global hotkey changes require app restart.</p>
+      <div class="setting-item">
+        <label for="shortcut-launch">Show/Hide Window</label>
+        <input type="text" id="shortcut-launch" class="shortcut-input" placeholder="Ctrl+Shift+Space">
+      </div>
+      <div class="setting-item">
+        <label for="shortcut-paste">Paste & Close</label>
+        <input type="text" id="shortcut-paste" class="shortcut-input" placeholder="Ctrl+Enter">
+      </div>
+      <div class="setting-item">
+        <label for="shortcut-close">Close Window</label>
+        <input type="text" id="shortcut-close" class="shortcut-input" placeholder="Escape">
+      </div>
+      <div class="setting-item">
+        <label for="shortcut-history-next">History Next</label>
+        <input type="text" id="shortcut-history-next" class="shortcut-input" placeholder="Ctrl+J">
+      </div>
+      <div class="setting-item">
+        <label for="shortcut-history-prev">History Prev</label>
+        <input type="text" id="shortcut-history-prev" class="shortcut-input" placeholder="Ctrl+K">
+      </div>
+      <div class="setting-item">
+        <label for="shortcut-search">Search</label>
+        <input type="text" id="shortcut-search" class="shortcut-input" placeholder="Ctrl+F">
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <div class="button-bar">
+      <button id="btn-save" class="primary">Save</button>
+      <button id="btn-cancel">Cancel</button>
+    </div>
+
+    <div id="status-message" class="hidden"></div>
+  </div>
+
+  <script type="module" src="/src-frontend/settings.ts"></script>
+</body>
+</html>

@@ -15,6 +15,7 @@ class PromptLineApp {
   private historyIndex = -1;
   private searchMode = false;
   private searchQuery = "";
+  private draftSaveTimeout: number | null = null;
 
   constructor() {
     this.textarea = document.getElementById("input-text") as HTMLTextAreaElement;
@@ -24,6 +25,7 @@ class PromptLineApp {
 
     this.setupEventListeners();
     this.loadHistory();
+    this.loadDraft();
     this.focusTextarea();
   }
 
@@ -88,6 +90,11 @@ class PromptLineApp {
       this.loadHistory();
       this.focusTextarea();
     });
+
+    // Draft autosave on text change
+    this.textarea.addEventListener("input", () => {
+      this.scheduleDraftSave();
+    });
   }
 
   private async handlePaste(): Promise<void> {
@@ -96,6 +103,7 @@ class PromptLineApp {
 
     try {
       await invoke("paste_and_save", { text });
+      await this.clearDraft();
       await this.hideWindow();
       await invoke("simulate_paste");
       this.textarea.value = "";
@@ -108,6 +116,7 @@ class PromptLineApp {
   private handleClear(): void {
     this.textarea.value = "";
     this.historyIndex = -1;
+    this.clearDraft();
     this.focusTextarea();
   }
 
@@ -250,6 +259,51 @@ class PromptLineApp {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Draft autosave methods
+  private async loadDraft(): Promise<void> {
+    try {
+      const draft = await invoke<string>("load_draft");
+      if (draft && !this.textarea.value) {
+        this.textarea.value = draft;
+        // Move cursor to end
+        this.textarea.setSelectionRange(draft.length, draft.length);
+      }
+    } catch (error) {
+      console.error("Failed to load draft:", error);
+    }
+  }
+
+  private scheduleDraftSave(): void {
+    // Debounce: save after 500ms of no typing
+    if (this.draftSaveTimeout !== null) {
+      clearTimeout(this.draftSaveTimeout);
+    }
+    this.draftSaveTimeout = window.setTimeout(() => {
+      this.saveDraft();
+    }, 500);
+  }
+
+  private async saveDraft(): Promise<void> {
+    try {
+      const text = this.textarea.value;
+      if (text) {
+        await invoke("save_draft", { text });
+      } else {
+        await this.clearDraft();
+      }
+    } catch (error) {
+      console.error("Failed to save draft:", error);
+    }
+  }
+
+  private async clearDraft(): Promise<void> {
+    try {
+      await invoke("clear_draft");
+    } catch (error) {
+      console.error("Failed to clear draft:", error);
+    }
   }
 }
 
