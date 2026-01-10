@@ -72,8 +72,7 @@ fn save_draft(text: String) -> Result<(), String> {
             .map_err(|e| format!("Failed to create directory: {}", e))?;
     }
 
-    std::fs::write(&path, &text)
-        .map_err(|e| format!("Failed to save draft: {}", e))?;
+    std::fs::write(&path, &text).map_err(|e| format!("Failed to save draft: {}", e))?;
 
     Ok(())
 }
@@ -87,8 +86,7 @@ fn load_draft() -> Result<String, String> {
         return Ok(String::new());
     }
 
-    std::fs::read_to_string(&path)
-        .map_err(|e| format!("Failed to load draft: {}", e))
+    std::fs::read_to_string(&path).map_err(|e| format!("Failed to load draft: {}", e))
 }
 
 /// Clear draft
@@ -97,8 +95,7 @@ fn clear_draft() -> Result<(), String> {
     let path = draft_path()?;
 
     if path.exists() {
-        std::fs::remove_file(&path)
-            .map_err(|e| format!("Failed to clear draft: {}", e))?;
+        std::fs::remove_file(&path).map_err(|e| format!("Failed to clear draft: {}", e))?;
     }
 
     Ok(())
@@ -106,7 +103,10 @@ fn clear_draft() -> Result<(), String> {
 
 /// Save configuration
 #[tauri::command]
-fn save_config(new_config: config::Config, state: tauri::State<'_, AppState>) -> Result<(), String> {
+fn save_config(
+    new_config: config::Config,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
     new_config.save()?;
     let mut config = state.config.lock().unwrap();
     *config = new_config;
@@ -123,12 +123,13 @@ fn show_settings_window(app: &tauri::AppHandle) {
     }
 
     // Create new settings window
-    let _window = WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
-        .title("Settings - prompt-line-rs")
-        .inner_size(500.0, 450.0)
-        .resizable(true)
-        .center()
-        .build();
+    let _window =
+        WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
+            .title("Settings - prompt-line-rs")
+            .inner_size(500.0, 450.0)
+            .resizable(true)
+            .center()
+            .build();
 }
 
 /// Parse a shortcut string like "Ctrl+Shift+Space" into Modifiers and Code
@@ -230,13 +231,17 @@ pub fn run() {
             // Setup system tray
             let show_label = format!("Show ({})", &launch_shortcut);
             let show_item = MenuItem::with_id(app, "show", &show_label, true, None::<&str>)?;
-            let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
+            let settings_item =
+                MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &settings_item, &quit_item])?;
 
             let tooltip = format!("prompt-line-rs ({})", &launch_shortcut);
             let _tray = TrayIconBuilder::new()
-                .icon(tauri::image::Image::from_bytes(include_bytes!("../icons/32x32.png")).expect("Failed to load icon"))
+                .icon(
+                    tauri::image::Image::from_bytes(include_bytes!("../icons/32x32.png"))
+                        .expect("Failed to load icon"),
+                )
                 .menu(&menu)
                 .tooltip(&tooltip)
                 .on_menu_event(|app, event| match event.id.as_ref() {

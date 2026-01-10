@@ -6,6 +6,54 @@ interface HistoryEntry {
   timestamp: string;
 }
 
+interface Shortcuts {
+  launch: string;
+  paste: string;
+  close: string;
+  history_next: string;
+  history_prev: string;
+  search: string;
+  clear: string;
+  line_start: string;
+  line_end: string;
+  char_back: string;
+  char_forward: string;
+  word_back: string;
+  word_forward: string;
+  kill_to_end: string;
+  kill_to_start: string;
+  kill_word_back: string;
+  delete_char: string;
+  yank: string;
+}
+
+interface Config {
+  shortcuts: Shortcuts;
+}
+
+// Parse shortcut string like "Ctrl+A" into { ctrl, alt, shift, key }
+function parseShortcut(shortcut: string): { ctrl: boolean; alt: boolean; shift: boolean; key: string } {
+  const parts = shortcut.toLowerCase().split("+");
+  const key = parts[parts.length - 1];
+  return {
+    ctrl: parts.includes("ctrl"),
+    alt: parts.includes("alt"),
+    shift: parts.includes("shift"),
+    key: key,
+  };
+}
+
+// Check if keyboard event matches shortcut
+function matchShortcut(e: KeyboardEvent, shortcut: string): boolean {
+  const parsed = parseShortcut(shortcut);
+  return (
+    e.key.toLowerCase() === parsed.key &&
+    e.ctrlKey === parsed.ctrl &&
+    e.altKey === parsed.alt &&
+    e.shiftKey === parsed.shift
+  );
+}
+
 class PromptLineApp {
   private textarea: HTMLTextAreaElement;
   private historyList: HTMLUListElement;
@@ -16,6 +64,9 @@ class PromptLineApp {
   private searchMode = false;
   private searchQuery = "";
   private draftSaveTimeout: number | null = null;
+  private killRing: string = ""; // For Ctrl+Y (yank)
+  private savedInput: string = ""; // For history navigation (readline behavior)
+  private shortcuts!: Shortcuts;
 
   constructor() {
     this.textarea = document.getElementById("input-text") as HTMLTextAreaElement;
@@ -23,10 +74,45 @@ class PromptLineApp {
     this.historySearch = document.getElementById("history-search") as HTMLInputElement;
     this.searchBtn = document.getElementById("btn-search") as HTMLButtonElement;
 
+    this.init();
+  }
+
+  private async init(): Promise<void> {
+    await this.loadConfig();
     this.setupEventListeners();
     this.loadHistory();
     this.loadDraft();
     this.focusTextarea();
+  }
+
+  private async loadConfig(): Promise<void> {
+    try {
+      const config = await invoke<Config>("get_config");
+      this.shortcuts = config.shortcuts;
+    } catch (error) {
+      console.error("Failed to load config:", error);
+      // Use defaults if config fails to load
+      this.shortcuts = {
+        launch: "Ctrl+Shift+Space",
+        paste: "Ctrl+Enter",
+        close: "Escape",
+        history_next: "Ctrl+n",
+        history_prev: "Ctrl+p",
+        search: "Ctrl+r",
+        clear: "Ctrl+l",
+        line_start: "Ctrl+a",
+        line_end: "Ctrl+e",
+        char_back: "Ctrl+b",
+        char_forward: "Ctrl+f",
+        word_back: "Alt+b",
+        word_forward: "Alt+f",
+        kill_to_end: "Ctrl+k",
+        kill_to_start: "Ctrl+u",
+        kill_word_back: "Ctrl+w",
+        delete_char: "Ctrl+d",
+        yank: "Ctrl+y",
+      };
+    }
   }
 
   private focusTextarea(): void {
@@ -46,36 +132,152 @@ class PromptLineApp {
     });
 
     this.historySearch.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+      // Escape: Close search mode
+      if (matchShortcut(e, this.shortcuts.close)) {
         e.preventDefault();
         this.closeSearchMode();
+        return;
+      }
+      // Navigate history while searching
+      if (matchShortcut(e, this.shortcuts.history_prev)) {
+        e.preventDefault();
+        this.navigateHistory(-1);
+        return;
+      }
+      if (matchShortcut(e, this.shortcuts.history_next)) {
+        e.preventDefault();
+        this.navigateHistory(1);
+        return;
+      }
+      // Enter: Select current history item and close search
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (this.historyIndex >= 0) {
+          this.selectHistoryItem(this.historyIndex);
+        }
+        this.closeSearchMode();
+        return;
       }
     });
 
-    // Keyboard shortcuts (matching prompt-line)
-    document.addEventListener("keydown", (e) => {
-      // Ctrl+Enter: Paste and close
-      if (e.key === "Enter" && e.ctrlKey) {
+    // Keyboard shortcuts (readline bindings + app shortcuts)
+    this.textarea.addEventListener("keydown", (e) => {
+      // === App shortcuts ===
+      // Paste and close
+      if (matchShortcut(e, this.shortcuts.paste)) {
         e.preventDefault();
         this.handlePaste();
+        return;
       }
-      // Ctrl+j: Next history item
-      else if (e.key === "j" && e.ctrlKey) {
+
+      // Search history
+      if (matchShortcut(e, this.shortcuts.search)) {
         e.preventDefault();
-        this.navigateHistory(1);
+        this.toggleSearchMode();
+        return;
       }
-      // Ctrl+k: Previous history item
-      else if (e.key === "k" && e.ctrlKey) {
+
+      // === Readline: History ===
+      // Previous history (go back)
+      if (matchShortcut(e, this.shortcuts.history_prev)) {
         e.preventDefault();
         this.navigateHistory(-1);
+        return;
       }
-      // Ctrl+f: Open search mode
-      else if (e.key === "f" && e.ctrlKey) {
+      // Next history (go forward)
+      if (matchShortcut(e, this.shortcuts.history_next)) {
         e.preventDefault();
-        this.openSearchMode();
+        this.navigateHistory(1);
+        return;
       }
-      // Escape: Close search or window
-      else if (e.key === "Escape") {
+
+      // === Readline: Cursor Movement ===
+      // Beginning of line
+      if (matchShortcut(e, this.shortcuts.line_start)) {
+        e.preventDefault();
+        this.moveCursorToLineStart();
+        return;
+      }
+      // End of line
+      if (matchShortcut(e, this.shortcuts.line_end)) {
+        e.preventDefault();
+        this.moveCursorToLineEnd();
+        return;
+      }
+      // Back one character
+      if (matchShortcut(e, this.shortcuts.char_back)) {
+        e.preventDefault();
+        this.moveCursor(-1);
+        return;
+      }
+      // Forward one character
+      if (matchShortcut(e, this.shortcuts.char_forward)) {
+        e.preventDefault();
+        this.moveCursor(1);
+        return;
+      }
+      // Back one word
+      if (matchShortcut(e, this.shortcuts.word_back)) {
+        e.preventDefault();
+        this.moveCursorByWord(-1);
+        return;
+      }
+      // Forward one word
+      if (matchShortcut(e, this.shortcuts.word_forward)) {
+        e.preventDefault();
+        this.moveCursorByWord(1);
+        return;
+      }
+
+      // === Readline: Deletion ===
+      // Kill to end of line
+      if (matchShortcut(e, this.shortcuts.kill_to_end)) {
+        e.preventDefault();
+        this.killToEnd();
+        return;
+      }
+      // Kill to beginning of line
+      if (matchShortcut(e, this.shortcuts.kill_to_start)) {
+        e.preventDefault();
+        this.killToStart();
+        return;
+      }
+      // Kill word backward
+      if (matchShortcut(e, this.shortcuts.kill_word_back)) {
+        e.preventDefault();
+        this.killWordBackward();
+        return;
+      }
+      // Delete character or close if empty
+      if (matchShortcut(e, this.shortcuts.delete_char)) {
+        e.preventDefault();
+        if (this.textarea.value === "") {
+          this.hideWindow();
+        } else {
+          this.deleteCharacter();
+        }
+        return;
+      }
+
+      // === Readline: Other ===
+      // Yank (paste from kill ring)
+      if (matchShortcut(e, this.shortcuts.yank)) {
+        e.preventDefault();
+        this.yank();
+        return;
+      }
+      // Clear textarea
+      if (matchShortcut(e, this.shortcuts.clear)) {
+        e.preventDefault();
+        this.handleClear();
+        return;
+      }
+    });
+
+    // Global shortcuts (work even when textarea not focused)
+    document.addEventListener("keydown", (e) => {
+      // Close: Close search or window
+      if (matchShortcut(e, this.shortcuts.close)) {
         e.preventDefault();
         if (this.searchMode) {
           this.closeSearchMode();
@@ -108,6 +310,7 @@ class PromptLineApp {
       await invoke("simulate_paste");
       this.textarea.value = "";
       this.historyIndex = -1;
+      this.savedInput = "";
     } catch (error) {
       console.error("Paste failed:", error);
     }
@@ -116,6 +319,7 @@ class PromptLineApp {
   private handleClear(): void {
     this.textarea.value = "";
     this.historyIndex = -1;
+    this.savedInput = "";
     this.clearDraft();
     this.focusTextarea();
   }
@@ -166,10 +370,16 @@ class PromptLineApp {
     const newIndex = this.historyIndex + direction;
     if (newIndex < -1 || newIndex >= this.historyEntries.length) return;
 
+    // Save current input when first entering history (readline behavior)
+    if (this.historyIndex === -1 && newIndex >= 0) {
+      this.savedInput = this.textarea.value;
+    }
+
     this.historyIndex = newIndex;
 
     if (this.historyIndex === -1) {
-      this.textarea.value = "";
+      // Restore saved input when returning from history
+      this.textarea.value = this.savedInput;
     } else {
       this.textarea.value = this.historyEntries[this.historyIndex].text;
     }
@@ -304,6 +514,137 @@ class PromptLineApp {
     } catch (error) {
       console.error("Failed to clear draft:", error);
     }
+  }
+
+  // === Readline: Cursor Movement ===
+  private moveCursorToLineStart(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    // Find the start of the current line
+    let lineStart = pos;
+    while (lineStart > 0 && text[lineStart - 1] !== "\n") {
+      lineStart--;
+    }
+    this.textarea.setSelectionRange(lineStart, lineStart);
+  }
+
+  private moveCursorToLineEnd(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    // Find the end of the current line
+    let lineEnd = pos;
+    while (lineEnd < text.length && text[lineEnd] !== "\n") {
+      lineEnd++;
+    }
+    this.textarea.setSelectionRange(lineEnd, lineEnd);
+  }
+
+  private moveCursor(delta: number): void {
+    const pos = this.textarea.selectionStart;
+    const newPos = Math.max(0, Math.min(this.textarea.value.length, pos + delta));
+    this.textarea.setSelectionRange(newPos, newPos);
+  }
+
+  private moveCursorByWord(direction: number): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    let newPos = pos;
+
+    if (direction < 0) {
+      // Move backward: skip spaces, then skip word characters
+      while (newPos > 0 && /\s/.test(text[newPos - 1])) {
+        newPos--;
+      }
+      while (newPos > 0 && !/\s/.test(text[newPos - 1])) {
+        newPos--;
+      }
+    } else {
+      // Move forward: skip word characters, then skip spaces
+      while (newPos < text.length && !/\s/.test(text[newPos])) {
+        newPos++;
+      }
+      while (newPos < text.length && /\s/.test(text[newPos])) {
+        newPos++;
+      }
+    }
+
+    this.textarea.setSelectionRange(newPos, newPos);
+  }
+
+  // === Readline: Kill (Delete) ===
+  private killToEnd(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    // Find the end of the current line
+    let lineEnd = pos;
+    while (lineEnd < text.length && text[lineEnd] !== "\n") {
+      lineEnd++;
+    }
+    // Save to kill ring
+    this.killRing = text.substring(pos, lineEnd);
+    // Delete
+    this.textarea.value = text.substring(0, pos) + text.substring(lineEnd);
+    this.textarea.setSelectionRange(pos, pos);
+    this.scheduleDraftSave();
+  }
+
+  private killToStart(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    // Find the start of the current line
+    let lineStart = pos;
+    while (lineStart > 0 && text[lineStart - 1] !== "\n") {
+      lineStart--;
+    }
+    // Save to kill ring
+    this.killRing = text.substring(lineStart, pos);
+    // Delete
+    this.textarea.value = text.substring(0, lineStart) + text.substring(pos);
+    this.textarea.setSelectionRange(lineStart, lineStart);
+    this.scheduleDraftSave();
+  }
+
+  private killWordBackward(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    let newPos = pos;
+
+    // Skip trailing spaces
+    while (newPos > 0 && /\s/.test(text[newPos - 1])) {
+      newPos--;
+    }
+    // Skip word characters
+    while (newPos > 0 && !/\s/.test(text[newPos - 1])) {
+      newPos--;
+    }
+
+    // Save to kill ring
+    this.killRing = text.substring(newPos, pos);
+    // Delete
+    this.textarea.value = text.substring(0, newPos) + text.substring(pos);
+    this.textarea.setSelectionRange(newPos, newPos);
+    this.scheduleDraftSave();
+  }
+
+  private deleteCharacter(): void {
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    if (pos < text.length) {
+      this.textarea.value = text.substring(0, pos) + text.substring(pos + 1);
+      this.textarea.setSelectionRange(pos, pos);
+      this.scheduleDraftSave();
+    }
+  }
+
+  // === Readline: Yank ===
+  private yank(): void {
+    if (!this.killRing) return;
+    const pos = this.textarea.selectionStart;
+    const text = this.textarea.value;
+    this.textarea.value = text.substring(0, pos) + this.killRing + text.substring(pos);
+    const newPos = pos + this.killRing.length;
+    this.textarea.setSelectionRange(newPos, newPos);
+    this.scheduleDraftSave();
   }
 }
 

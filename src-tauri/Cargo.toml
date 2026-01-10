@@ -1,6 +1,6 @@
 [package]
 name = "prompt-line-rs"
-version = "0.1.1"
+version = "0.1.2"
 description = "A floating text input tool for Windows"
 authors = ["prompt-line-rs developers"]
 edition = "2021"

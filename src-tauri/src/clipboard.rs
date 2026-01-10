@@ -4,8 +4,8 @@ use arboard::Clipboard;
 
 /// Copy text to clipboard and return Result
 pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
-    let mut clipboard = Clipboard::new()
-        .map_err(|e| format!("Failed to access clipboard: {}", e))?;
+    let mut clipboard =
+        Clipboard::new().map_err(|e| format!("Failed to access clipboard: {}", e))?;
 
     clipboard
         .set_text(text.to_string())
@@ -18,12 +18,12 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
 #[cfg(windows)]
 pub fn simulate_paste() -> Result<(), String> {
     use windows::Win32::UI::Input::KeyboardAndMouse::{
-        SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS,
-        KEYEVENTF_KEYUP, VK_CONTROL, VK_V,
+        SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
+        VK_CONTROL, VK_V,
     };
 
     unsafe {
-        let mut inputs = [
+        let inputs = [
             // Ctrl down
             INPUT {
                 r#type: INPUT_KEYBOARD,
@@ -78,7 +78,7 @@ pub fn simulate_paste() -> Result<(), String> {
             },
         ];
 
-        let result = SendInput(&mut inputs, std::mem::size_of::<INPUT>() as i32);
+        let result = SendInput(&inputs, std::mem::size_of::<INPUT>() as i32);
 
         if result == 0 {
             return Err("Failed to send input events".to_string());
