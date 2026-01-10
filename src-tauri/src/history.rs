@@ -92,8 +92,7 @@ impl History {
         for entry in &self.entries {
             let json = serde_json::to_string(entry)
                 .map_err(|e| format!("Failed to serialize entry: {}", e))?;
-            writeln!(file, "{}", json)
-                .map_err(|e| format!("Failed to write entry: {}", e))?;
+            writeln!(file, "{}", json).map_err(|e| format!("Failed to write entry: {}", e))?;
         }
 
         Ok(())

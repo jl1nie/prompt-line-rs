@@ -8,11 +8,12 @@ A floating text input tool for Windows, inspired by [prompt-line](https://github
 
 - **Global Hotkey**: Launch with `Ctrl+Shift+Space` from anywhere
 - **Quick Paste**: Press `Ctrl+Enter` to copy text and paste to the previously focused app
-- **History Navigation**: Use `Ctrl+J`/`Ctrl+K` to navigate through history
-- **History Search**: Press `Ctrl+F` to search your input history
+- **Readline Bindings**: Emacs-style editing shortcuts (Ctrl+A/E, Ctrl+K/U, etc.)
+- **History Navigation**: Use `Ctrl+P`/`Ctrl+N` to navigate through history
+- **History Search**: Press `Ctrl+R` to search your input history
 - **System Tray**: Runs quietly in system tray, always ready
 - **Japanese Support**: Full Japanese input with IME support
-- **Customizable**: Configure shortcuts and window settings
+- **Customizable**: Configure all shortcuts via Settings UI
 
 ## Installation
 
@@ -50,22 +51,43 @@ npm run tauri build
 
 1. **Launch**: Run `prompt-line-rs.exe` (icon appears in system tray)
 2. **Show Window**: Press `Ctrl+Shift+Space`
-3. **Type**: Enter your text
+3. **Type**: Enter your text (use readline shortcuts for editing)
 4. **Paste**: Press `Ctrl+Enter` to paste to the previously focused application
-5. **Navigate History**: Use `Ctrl+J` (next) / `Ctrl+K` (previous)
-6. **Search History**: Press `Ctrl+F` and type to filter
+5. **Navigate History**: Use `Ctrl+P` (previous) / `Ctrl+N` (next)
+6. **Search History**: Press `Ctrl+R` and type to filter
 7. **Close**: Press `Escape` to hide (app stays in system tray)
 
 ## Keyboard Shortcuts
+
+### App Shortcuts
 
 | Shortcut           | Action                              |
 |--------------------|-------------------------------------|
 | `Ctrl+Shift+Space` | Show/hide window (global)           |
 | `Ctrl+Enter`       | Copy text and paste to previous app |
-| `Ctrl+J`           | Next history item                   |
-| `Ctrl+K`           | Previous history item               |
-| `Ctrl+F`           | Open history search                 |
 | `Escape`           | Close window / Exit search          |
+
+### Readline Bindings
+
+| Shortcut   | Action              |
+|------------|---------------------|
+| `Ctrl+P`   | Previous history    |
+| `Ctrl+N`   | Next history        |
+| `Ctrl+R`   | Search history      |
+| `Ctrl+A`   | Line start          |
+| `Ctrl+E`   | Line end            |
+| `Ctrl+B`   | Char back           |
+| `Ctrl+F`   | Char forward        |
+| `Alt+B`    | Word back           |
+| `Alt+F`    | Word forward        |
+| `Ctrl+K`   | Kill to end         |
+| `Ctrl+U`   | Kill to start       |
+| `Ctrl+W`   | Kill word back      |
+| `Ctrl+D`   | Delete char         |
+| `Ctrl+Y`   | Yank (paste)        |
+| `Ctrl+L`   | Clear text          |
+
+All shortcuts are configurable via Settings (right-click tray icon).
 
 **Fallback hotkeys**: If `Ctrl+Shift+Space` is unavailable, these are tried in order:
 
@@ -88,9 +110,23 @@ Default settings:
 launch = "Ctrl+Shift+Space"
 paste = "Ctrl+Enter"
 close = "Escape"
-history_next = "Ctrl+j"
-history_prev = "Ctrl+k"
-search = "Ctrl+f"
+history_next = "Ctrl+n"
+history_prev = "Ctrl+p"
+search = "Ctrl+r"
+clear = "Ctrl+l"
+# Readline cursor movement
+line_start = "Ctrl+a"
+line_end = "Ctrl+e"
+char_back = "Ctrl+b"
+char_forward = "Ctrl+f"
+word_back = "Alt+b"
+word_forward = "Alt+f"
+# Readline kill/delete
+kill_to_end = "Ctrl+k"
+kill_to_start = "Ctrl+u"
+kill_word_back = "Ctrl+w"
+delete_char = "Ctrl+d"
+yank = "Ctrl+y"
 
 [history]
 max_entries = 1000
