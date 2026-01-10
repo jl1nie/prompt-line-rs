@@ -40,3 +40,18 @@ npm run tauri dev
 - There are no automated tests currently in the project
 - Manual testing is required for verification
 - Ensure Windows-specific features work (clipboard, keyboard simulation)
+
+---
+
+# Remaining Tasks (TODO)
+
+## Low Priority
+- [ ] **Automated tests**: Add unit tests for config parsing, history management
+
+## Completed (v0.1.2)
+- [x] Configurable readline bindings (all shortcuts customizable in Settings)
+- [x] Settings UI with Readline Bindings section
+- [x] System tray icon with context menu
+- [x] Auto-start on Windows boot (NSIS installer registry entry)
+- [x] History search highlight (search matches highlighted in yellow)
+- [x] GitHub Release with Windows installer (.exe, .msi)
