@@ -140,6 +140,12 @@ impl History {
         results
     }
 
+    /// Clear all history entries
+    pub fn clear(&mut self) -> Result<(), String> {
+        self.entries.clear();
+        self.save()
+    }
+
     /// Get the default history file path
     pub fn default_path() -> Result<PathBuf, String> {
         let config_dir = directories::ProjectDirs::from("com", "prompt-line", "prompt-line-rs")

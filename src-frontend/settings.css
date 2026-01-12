@@ -142,6 +142,17 @@ button.primary:hover {
   border-color: var(--accent-hover);
 }
 
+button.danger {
+  background-color: #5a2a2a;
+  border-color: #7a3a3a;
+  color: #ff9090;
+}
+
+button.danger:hover {
+  background-color: #6a3a3a;
+  border-color: #8a4a4a;
+}
+
 #status-message {
   margin-top: 16px;
   padding: 10px;

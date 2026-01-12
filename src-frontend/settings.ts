@@ -114,6 +114,7 @@ class SettingsApp {
   private setupEventListeners(): void {
     document.getElementById("btn-save")?.addEventListener("click", () => this.handleSave());
     document.getElementById("btn-cancel")?.addEventListener("click", () => this.handleCancel());
+    document.getElementById("btn-clear-history")?.addEventListener("click", () => this.handleClearHistory());
 
     // Escape to close
     document.addEventListener("keydown", (e) => {
@@ -225,6 +226,20 @@ class SettingsApp {
       await getCurrentWindow().close();
     } catch (error) {
       console.error("Failed to close window:", error);
+    }
+  }
+
+  private async handleClearHistory(): Promise<void> {
+    if (!confirm("Are you sure you want to clear all history? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await invoke("clear_history");
+      this.showStatus("History cleared successfully", "success");
+    } catch (error) {
+      console.error("Failed to clear history:", error);
+      this.showStatus(`Failed to clear history: ${error}`, "error");
     }
   }
 

@@ -24,6 +24,12 @@ fn get_history(query: String, state: tauri::State<'_, AppState>) -> Vec<history:
     state.history.lock().unwrap().search(&query)
 }
 
+/// Clear all history entries
+#[tauri::command]
+fn clear_history(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    state.history.lock().unwrap().clear()
+}
+
 /// Save text to history and copy to clipboard
 #[tauri::command]
 fn paste_and_save(text: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
@@ -332,6 +338,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_history,
+            clear_history,
             paste_and_save,
             simulate_paste,
             get_config,
