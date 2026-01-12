@@ -70,7 +70,10 @@
       "Bash(cmd /c \"cd /d C:\\\\Users\\\\minor\\\\src\\\\prompt-line-rs\\\\src-tauri && cargo check 2>&1\")",
       "Bash(cargo fmt:*)",
       "mcp__plugin_serena_serena__replace_content",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(start \"\" \"C:\\\\Users\\\\minor\\\\src\\\\prompt-line-rs\\\\src-tauri\\\\target\\\\release\\\\bundle\\\\nsis\\\\prompt-line-rs_0.1.2_x64-setup.exe\":*)",
+      "Bash(git pull:*)",
+      "mcp__plugin_serena_serena__read_file"
     ]
   }
 }

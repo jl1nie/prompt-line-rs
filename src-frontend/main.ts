@@ -138,15 +138,15 @@ class PromptLineApp {
         this.closeSearchMode();
         return;
       }
-      // Navigate history while searching
+      // Navigate history while searching (readline: prev=older, next=newer)
       if (matchShortcut(e, this.shortcuts.history_prev)) {
         e.preventDefault();
-        this.navigateHistory(-1);
+        this.navigateHistory(1); // +1 = older entries
         return;
       }
       if (matchShortcut(e, this.shortcuts.history_next)) {
         e.preventDefault();
-        this.navigateHistory(1);
+        this.navigateHistory(-1); // -1 = newer entries
         return;
       }
       // Enter: Select current history item and close search
@@ -178,16 +178,16 @@ class PromptLineApp {
       }
 
       // === Readline: History ===
-      // Previous history (go back)
+      // Previous history (go back to older entries)
       if (matchShortcut(e, this.shortcuts.history_prev)) {
         e.preventDefault();
-        this.navigateHistory(-1);
+        this.navigateHistory(1); // +1 = older entries (higher index in newest-first array)
         return;
       }
-      // Next history (go forward)
+      // Next history (go forward to newer entries)
       if (matchShortcut(e, this.shortcuts.history_next)) {
         e.preventDefault();
-        this.navigateHistory(1);
+        this.navigateHistory(-1); // -1 = newer entries (lower index in newest-first array)
         return;
       }
 
@@ -289,6 +289,7 @@ class PromptLineApp {
 
     // Window focus listener
     window.addEventListener("focus", () => {
+      this.loadConfig(); // Reload config (may have changed in settings)
       this.loadHistory();
       this.focusTextarea();
     });
@@ -359,8 +360,17 @@ class PromptLineApp {
     try {
       this.historyEntries = await invoke<HistoryEntry[]>("get_history", { query: this.searchQuery });
       this.renderHistory();
+      // Scroll to bottom (newest entry) on load
+      this.scrollHistoryToBottom();
     } catch (error) {
       console.error("Failed to load history:", error);
+    }
+  }
+
+  private scrollHistoryToBottom(): void {
+    const historySection = document.getElementById("history-section");
+    if (historySection) {
+      historySection.scrollTop = historySection.scrollHeight;
     }
   }
 

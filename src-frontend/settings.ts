@@ -202,7 +202,8 @@ class SettingsApp {
     try {
       await invoke("save_config", { newConfig });
       this.config = newConfig;
-      this.showStatus("Settings saved successfully! Some changes require restart.", "success");
+      // Close window after successful save (main window will reload config on focus)
+      await getCurrentWindow().close();
     } catch (error) {
       console.error("Failed to save config:", error);
       this.showStatus(`Failed to save: ${error}`, "error");

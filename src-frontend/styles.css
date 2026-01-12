@@ -116,6 +116,8 @@ html, body {
 
 #history-list {
   list-style: none;
+  display: flex;
+  flex-direction: column-reverse; /* Older entries on top, like terminal history */
 }
 
 #history-list li {
