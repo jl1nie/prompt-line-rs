@@ -29,9 +29,11 @@ interface HistoryConfig {
 }
 
 interface WindowConfig {
-  width: number;
-  height: number;
   font_size: number;
+  history_font_size: number;
+  history_lines: number;
+  textarea_rows: number;
+  textarea_cols: number;
 }
 
 interface Config {
@@ -44,9 +46,11 @@ class SettingsApp {
   private config: Config | null = null;
 
   // Form elements
-  private windowWidth: HTMLInputElement;
-  private windowHeight: HTMLInputElement;
   private fontSize: HTMLInputElement;
+  private historyFontSize: HTMLInputElement;
+  private historyLines: HTMLInputElement;
+  private textareaRows: HTMLInputElement;
+  private textareaCols: HTMLInputElement;
   private maxEntries: HTMLInputElement;
   private statusMessage: HTMLElement;
 
@@ -73,9 +77,11 @@ class SettingsApp {
   private shortcutYank: HTMLInputElement;
 
   constructor() {
-    this.windowWidth = document.getElementById("window-width") as HTMLInputElement;
-    this.windowHeight = document.getElementById("window-height") as HTMLInputElement;
     this.fontSize = document.getElementById("font-size") as HTMLInputElement;
+    this.historyFontSize = document.getElementById("history-font-size") as HTMLInputElement;
+    this.historyLines = document.getElementById("history-lines") as HTMLInputElement;
+    this.textareaRows = document.getElementById("textarea-rows") as HTMLInputElement;
+    this.textareaCols = document.getElementById("textarea-cols") as HTMLInputElement;
     this.maxEntries = document.getElementById("max-entries") as HTMLInputElement;
     this.statusMessage = document.getElementById("status-message") as HTMLElement;
 
@@ -132,9 +138,11 @@ class SettingsApp {
     if (!this.config) return;
 
     // Window settings
-    this.windowWidth.value = String(this.config.window.width);
-    this.windowHeight.value = String(this.config.window.height);
     this.fontSize.value = String(this.config.window.font_size);
+    this.historyFontSize.value = String(this.config.window.history_font_size);
+    this.historyLines.value = String(this.config.window.history_lines);
+    this.textareaRows.value = String(this.config.window.textarea_rows);
+    this.textareaCols.value = String(this.config.window.textarea_cols);
 
     // History settings
     this.maxEntries.value = String(this.config.history.max_entries);
@@ -193,9 +201,11 @@ class SettingsApp {
         max_entries: parseInt(this.maxEntries.value, 10) || 1000,
       },
       window: {
-        width: parseFloat(this.windowWidth.value) || 600,
-        height: parseFloat(this.windowHeight.value) || 300,
-        font_size: parseFloat(this.fontSize.value) || 16,
+        font_size: parseFloat(this.fontSize.value) || 14,
+        history_font_size: parseFloat(this.historyFontSize.value) || 12,
+        history_lines: parseInt(this.historyLines.value, 10) || 3,
+        textarea_rows: parseInt(this.textareaRows.value, 10) || 3,
+        textarea_cols: parseInt(this.textareaCols.value, 10) || 60,
       },
     };
 

@@ -101,12 +101,21 @@ fn clear_draft() -> Result<(), String> {
     Ok(())
 }
 
-/// Save configuration
+/// Save configuration and apply window size
 #[tauri::command]
 fn save_config(
     new_config: config::Config,
     state: tauri::State<'_, AppState>,
+    app: tauri::AppHandle,
 ) -> Result<(), String> {
+    // Resize main window if it exists
+    if let Some(window) = app.get_webview_window("main") {
+        let width = new_config.window.width_pixels();
+        let height = new_config.window.height_pixels();
+        let size = tauri::LogicalSize::new(width, height);
+        let _ = window.set_size(size);
+    }
+
     new_config.save()?;
     let mut config = state.config.lock().unwrap();
     *config = new_config;

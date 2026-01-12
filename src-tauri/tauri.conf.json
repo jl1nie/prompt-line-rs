@@ -14,8 +14,8 @@
     "windows": [
       {
         "title": "prompt-line-rs",
-        "width": 600,
-        "height": 300,
+        "width": 530,
+        "height": 320,
         "resizable": true,
         "alwaysOnTop": true,
         "decorations": true,

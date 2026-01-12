@@ -101,14 +101,20 @@ pub struct HistoryConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WindowConfig {
-    #[serde(default = "default_width")]
-    pub width: f32,
-
-    #[serde(default = "default_height")]
-    pub height: f32,
-
     #[serde(default = "default_font_size")]
     pub font_size: f32,
+
+    #[serde(default = "default_history_font_size")]
+    pub history_font_size: f32,
+
+    #[serde(default = "default_history_lines")]
+    pub history_lines: u32,
+
+    #[serde(default = "default_textarea_rows")]
+    pub textarea_rows: u32,
+
+    #[serde(default = "default_textarea_cols")]
+    pub textarea_cols: u32,
 }
 
 // Default values (matching prompt-line + readline)
@@ -143,9 +149,11 @@ fn default_history() -> HistoryConfig {
 
 fn default_window() -> WindowConfig {
     WindowConfig {
-        width: 600.0,
-        height: 300.0, // prompt-line default
-        font_size: 16.0,
+        font_size: default_font_size(),
+        history_font_size: default_history_font_size(),
+        history_lines: default_history_lines(),
+        textarea_rows: default_textarea_rows(),
+        textarea_cols: default_textarea_cols(),
     }
 }
 
@@ -227,16 +235,65 @@ fn default_max_entries() -> usize {
     1000
 }
 
-fn default_width() -> f32 {
-    600.0
-}
-
-fn default_height() -> f32 {
-    400.0
-}
-
 fn default_font_size() -> f32 {
-    16.0
+    14.0
+}
+
+fn default_history_font_size() -> f32 {
+    12.0
+}
+
+fn default_history_lines() -> u32 {
+    3
+}
+
+fn default_textarea_rows() -> u32 {
+    3
+}
+
+fn default_textarea_cols() -> u32 {
+    60
+}
+
+impl WindowConfig {
+    /// Calculate window width in pixels
+    pub fn width_pixels(&self) -> f64 {
+        // Monospace char width ≈ font_size * 0.6
+        let char_width = self.font_size as f64 * 0.6;
+        let padding = 24.0; // Left + right padding
+        (self.textarea_cols as f64 * char_width) + padding
+    }
+
+    /// Calculate window height in pixels
+    pub fn height_pixels(&self) -> f64 {
+        let font_size = self.font_size as f64;
+        let history_font_size = self.history_font_size as f64;
+
+        // Header: title + padding + border
+        let header = 35.0;
+
+        // History items: timestamp + preview + padding + gap + border
+        // Both timestamp and preview use history_font_size
+        let timestamp_height = history_font_size * 1.4;
+        let preview_height = history_font_size * 1.3;
+        let history_padding = 16.0; // 8px top + 8px bottom
+        let history_gap = 2.0;
+        let history_border = 1.0;
+        let history_item_height =
+            timestamp_height + preview_height + history_padding + history_gap + history_border;
+        let history_area = self.history_lines as f64 * history_item_height;
+
+        // Textarea: rows * line_height + padding
+        let textarea_line_height = font_size * 1.4;
+        let textarea_padding = 20.0;
+        let textarea_area = (self.textarea_rows as f64 * textarea_line_height) + textarea_padding;
+
+        // Button bar + main padding
+        let button_area = 28.0;
+        let main_padding = 24.0; // Top + bottom padding in main
+
+        header + history_area + textarea_area + button_area + main_padding
+    }
 }
 
 impl Default for Config {

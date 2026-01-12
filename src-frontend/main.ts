@@ -27,8 +27,17 @@ interface Shortcuts {
   yank: string;
 }
 
+interface WindowConfig {
+  font_size: number;
+  history_font_size: number;
+  history_lines: number;
+  textarea_rows: number;
+  textarea_cols: number;
+}
+
 interface Config {
   shortcuts: Shortcuts;
+  window: WindowConfig;
 }
 
 // Parse shortcut string like "Ctrl+A" into { ctrl, alt, shift, key }
@@ -89,6 +98,7 @@ class PromptLineApp {
     try {
       const config = await invoke<Config>("get_config");
       this.shortcuts = config.shortcuts;
+      this.applyWindowConfig(config.window);
     } catch (error) {
       console.error("Failed to load config:", error);
       // Use defaults if config fails to load
@@ -112,7 +122,20 @@ class PromptLineApp {
         delete_char: "Ctrl+d",
         yank: "Ctrl+y",
       };
+      // Apply default window config
+      this.applyWindowConfig({ font_size: 14, history_font_size: 12, history_lines: 3, textarea_rows: 3, textarea_cols: 60 });
     }
+  }
+
+  private applyWindowConfig(window: WindowConfig): void {
+    const root = document.documentElement;
+    root.style.setProperty("--font-size", `${window.font_size}px`);
+    root.style.setProperty("--history-font-size", `${window.history_font_size}px`);
+
+    // Set textarea rows
+    const lineHeight = window.font_size * 1.4;
+    const textareaHeight = window.textarea_rows * lineHeight + 20; // 20px padding
+    this.textarea.style.height = `${textareaHeight}px`;
   }
 
   private focusTextarea(): void {
