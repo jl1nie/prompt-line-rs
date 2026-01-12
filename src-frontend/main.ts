@@ -125,6 +125,8 @@ class PromptLineApp {
       // Apply default window config
       this.applyWindowConfig({ font_size: 14, history_font_size: 12, history_lines: 3, textarea_rows: 3, textarea_cols: 60 });
     }
+    // Update UI to reflect actual shortcuts
+    this.updateShortcutDisplays();
   }
 
   private applyWindowConfig(window: WindowConfig): void {
@@ -136,6 +138,30 @@ class PromptLineApp {
     const lineHeight = window.font_size * 1.4;
     const textareaHeight = window.textarea_rows * lineHeight + 20; // 20px padding
     this.textarea.style.height = `${textareaHeight}px`;
+  }
+
+  private updateShortcutDisplays(): void {
+    // Format shortcut for display (e.g., "ctrl+p" -> "Ctrl+P")
+    const formatShortcut = (shortcut: string): string => {
+      return shortcut.split("+").map(part =>
+        part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+      ).join("+");
+    };
+
+    // Update history shortcuts hint
+    const shortcutsHint = document.querySelector(".shortcuts-hint");
+    if (shortcutsHint) {
+      const prev = formatShortcut(this.shortcuts.history_prev);
+      const next = formatShortcut(this.shortcuts.history_next);
+      shortcutsHint.innerHTML = `<kbd>${prev}</kbd>/<kbd>${next}</kbd>`;
+    }
+
+    // Update paste button shortcut
+    const pasteBtn = document.getElementById("btn-paste");
+    if (pasteBtn) {
+      const pasteShortcut = formatShortcut(this.shortcuts.paste);
+      pasteBtn.innerHTML = `Paste <kbd>${pasteShortcut}</kbd>`;
+    }
   }
 
   private focusTextarea(): void {
