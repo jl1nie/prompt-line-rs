@@ -4,6 +4,8 @@
 
 Windows向けのフローティングテキスト入力ツール。[prompt-line](https://github.com/nkmr-jp/prompt-line)にインスパイアされています。グローバルホットキーで素早く起動し、テキストを入力して、ワンキーで任意のアプリケーションにペーストできます。
 
+![UI](./prompt-line-rs.png)
+
 ## 特徴
 
 - **グローバルホットキー**: どこからでも`Ctrl+Shift+Space`で起動
@@ -144,6 +146,8 @@ font_size = 16.0
 ```text
 %APPDATA%\prompt-line\prompt-line-rs\data\history.jsonl
 ```
+
+履歴は設定画面からクリアできます（トレイアイコン右クリック → Settings → Clear All History）。
 
 ## ユースケース
 

@@ -4,6 +4,8 @@ English | [日本語](README.ja.md)
 
 A floating text input tool for Windows, inspired by [prompt-line](https://github.com/nkmr-jp/prompt-line). Quickly launch with a global hotkey, type your text, and paste it to any application with a single keystroke.
 
+![UI](./prompt-line-rs.png)
+
 ## Features
 
 - **Global Hotkey**: Launch with `Ctrl+Shift+Space` from anywhere
@@ -144,6 +146,8 @@ History is saved to:
 ```text
 %APPDATA%\prompt-line\prompt-line-rs\data\history.jsonl
 ```
+
+You can clear all history from Settings (right-click tray icon → Settings → Clear All History).
 
 ## Use Cases
 
