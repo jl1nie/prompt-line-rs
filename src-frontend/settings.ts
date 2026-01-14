@@ -36,10 +36,21 @@ interface WindowConfig {
   textarea_cols: number;
 }
 
+interface AppPasteOverride {
+  process_name: string;
+  shortcut: string;
+}
+
+interface BehaviorConfig {
+  simulate_paste_shortcut: string;
+  app_overrides: AppPasteOverride[];
+}
+
 interface Config {
   shortcuts: Shortcuts;
   history: HistoryConfig;
   window: WindowConfig;
+  behavior: BehaviorConfig;
 }
 
 class SettingsApp {
@@ -76,6 +87,15 @@ class SettingsApp {
   private shortcutDeleteChar: HTMLInputElement;
   private shortcutYank: HTMLInputElement;
 
+  // Behavior
+  private simulatePasteShortcut: HTMLInputElement;
+  private appOverride1Process: HTMLInputElement;
+  private appOverride1Shortcut: HTMLInputElement;
+  private appOverride2Process: HTMLInputElement;
+  private appOverride2Shortcut: HTMLInputElement;
+  private appOverride3Process: HTMLInputElement;
+  private appOverride3Shortcut: HTMLInputElement;
+
   constructor() {
     this.fontSize = document.getElementById("font-size") as HTMLInputElement;
     this.historyFontSize = document.getElementById("history-font-size") as HTMLInputElement;
@@ -106,6 +126,15 @@ class SettingsApp {
     this.shortcutKillWordBack = document.getElementById("shortcut-kill-word-back") as HTMLInputElement;
     this.shortcutDeleteChar = document.getElementById("shortcut-delete-char") as HTMLInputElement;
     this.shortcutYank = document.getElementById("shortcut-yank") as HTMLInputElement;
+
+    // Behavior
+    this.simulatePasteShortcut = document.getElementById("simulate-paste-shortcut") as HTMLInputElement;
+    this.appOverride1Process = document.getElementById("app-override-1-process") as HTMLInputElement;
+    this.appOverride1Shortcut = document.getElementById("app-override-1-shortcut") as HTMLInputElement;
+    this.appOverride2Process = document.getElementById("app-override-2-process") as HTMLInputElement;
+    this.appOverride2Shortcut = document.getElementById("app-override-2-shortcut") as HTMLInputElement;
+    this.appOverride3Process = document.getElementById("app-override-3-process") as HTMLInputElement;
+    this.appOverride3Shortcut = document.getElementById("app-override-3-shortcut") as HTMLInputElement;
 
     this.setupEventListeners();
     this.loadConfig();
@@ -169,6 +198,24 @@ class SettingsApp {
     this.shortcutKillWordBack.value = this.config.shortcuts.kill_word_back;
     this.shortcutDeleteChar.value = this.config.shortcuts.delete_char;
     this.shortcutYank.value = this.config.shortcuts.yank;
+
+    // Behavior
+    this.simulatePasteShortcut.value = this.config.behavior.simulate_paste_shortcut;
+
+    // App overrides
+    const overrides = this.config.behavior.app_overrides || [];
+    if (overrides[0]) {
+      this.appOverride1Process.value = overrides[0].process_name || "";
+      this.appOverride1Shortcut.value = overrides[0].shortcut || "";
+    }
+    if (overrides[1]) {
+      this.appOverride2Process.value = overrides[1].process_name || "";
+      this.appOverride2Shortcut.value = overrides[1].shortcut || "";
+    }
+    if (overrides[2]) {
+      this.appOverride3Process.value = overrides[2].process_name || "";
+      this.appOverride3Shortcut.value = overrides[2].shortcut || "";
+    }
   }
 
   private async handleSave(): Promise<void> {
@@ -207,6 +254,23 @@ class SettingsApp {
         history_lines: parseInt(this.historyLines.value, 10) || 3,
         textarea_rows: parseInt(this.textareaRows.value, 10) || 3,
         textarea_cols: parseInt(this.textareaCols.value, 10) || 60,
+      },
+      behavior: {
+        simulate_paste_shortcut: this.simulatePasteShortcut.value || "Ctrl+V",
+        app_overrides: [
+          {
+            process_name: this.appOverride1Process.value,
+            shortcut: this.appOverride1Shortcut.value,
+          },
+          {
+            process_name: this.appOverride2Process.value,
+            shortcut: this.appOverride2Shortcut.value,
+          },
+          {
+            process_name: this.appOverride3Process.value,
+            shortcut: this.appOverride3Shortcut.value,
+          },
+        ],
       },
     };
 

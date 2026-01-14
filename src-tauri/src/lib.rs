@@ -16,6 +16,50 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut,
 pub struct AppState {
     pub history: Mutex<history::History>,
     pub config: Mutex<config::Config>,
+    /// Process name of the window that was active before showing prompt-line
+    pub previous_process: Mutex<Option<String>>,
+}
+
+/// Get the process name of the foreground window
+#[cfg(windows)]
+fn get_foreground_process_name() -> Option<String> {
+    use windows::Win32::Foundation::{CloseHandle, MAX_PATH};
+    use windows::Win32::System::ProcessStatus::K32GetModuleBaseNameW;
+    use windows::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
+    use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+
+    unsafe {
+        let hwnd = GetForegroundWindow();
+        if hwnd.0.is_null() {
+            return None;
+        }
+
+        let mut process_id: u32 = 0;
+        GetWindowThreadProcessId(hwnd, Some(&mut process_id));
+        if process_id == 0 {
+            return None;
+        }
+
+        let handle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, process_id).ok()?;
+        if handle.is_invalid() {
+            return None;
+        }
+
+        let mut buffer = [0u16; MAX_PATH as usize];
+        let len = K32GetModuleBaseNameW(handle, None, &mut buffer);
+        let _ = CloseHandle(handle);
+
+        if len == 0 {
+            return None;
+        }
+
+        Some(String::from_utf16_lossy(&buffer[..len as usize]))
+    }
+}
+
+#[cfg(not(windows))]
+fn get_foreground_process_name() -> Option<String> {
+    None
 }
 
 /// Get history entries, optionally filtered by query
@@ -46,12 +90,34 @@ fn paste_and_save(text: String, state: tauri::State<'_, AppState>) -> Result<(),
     Ok(())
 }
 
-/// Simulate Ctrl+V to paste clipboard content
+/// Simulate paste shortcut (configurable, default: Ctrl+V)
+/// Uses app-specific override if the previous window matches a configured process
 #[tauri::command]
-fn simulate_paste() -> Result<(), String> {
+fn simulate_paste(state: tauri::State<'_, AppState>) -> Result<(), String> {
     // Wait for window to hide and focus to return to previous app
     std::thread::sleep(std::time::Duration::from_millis(100));
-    clipboard::simulate_paste()
+
+    let config = state.config.lock().unwrap();
+    let previous_process = state.previous_process.lock().unwrap();
+
+    // Find matching app override
+    let shortcut = if let Some(ref process_name) = *previous_process {
+        let process_lower = process_name.to_lowercase();
+        config
+            .behavior
+            .app_overrides
+            .iter()
+            .find(|o| !o.process_name.is_empty() && o.process_name.to_lowercase() == process_lower)
+            .map(|o| o.shortcut.clone())
+            .unwrap_or_else(|| config.behavior.simulate_paste_shortcut.clone())
+    } else {
+        config.behavior.simulate_paste_shortcut.clone()
+    };
+
+    drop(config);
+    drop(previous_process);
+
+    clipboard::simulate_paste(&shortcut)
 }
 
 /// Get current configuration
@@ -213,6 +279,11 @@ fn toggle_window(app: &tauri::AppHandle) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            // Record the process name of the foreground window before showing
+            if let Some(state) = app.try_state::<AppState>() {
+                let process_name = get_foreground_process_name();
+                *state.previous_process.lock().unwrap() = process_name;
+            }
             let _ = window.show();
             let _ = window.set_focus();
         }
@@ -335,6 +406,7 @@ pub fn run() {
         .manage(AppState {
             history: Mutex::new(history),
             config: Mutex::new(config),
+            previous_process: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             get_history,

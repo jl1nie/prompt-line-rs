@@ -48,6 +48,31 @@
       </div>
     </section>
 
+    <!-- Behavior Settings -->
+    <section class="settings-section">
+      <h2>Behavior</h2>
+      <div class="setting-item">
+        <label for="simulate-paste-shortcut">Default Paste Shortcut</label>
+        <input type="text" id="simulate-paste-shortcut" class="shortcut-input" placeholder="Ctrl+V">
+        <p class="hint">Default shortcut sent to target app</p>
+      </div>
+
+      <h3>App-Specific Overrides</h3>
+      <p class="hint">Use different paste shortcuts for specific applications</p>
+      <div class="app-override-row">
+        <input type="text" id="app-override-1-process" class="process-input" placeholder="alacritty.exe">
+        <input type="text" id="app-override-1-shortcut" class="shortcut-input" placeholder="Ctrl+Shift+V">
+      </div>
+      <div class="app-override-row">
+        <input type="text" id="app-override-2-process" class="process-input" placeholder="wezterm-gui.exe">
+        <input type="text" id="app-override-2-shortcut" class="shortcut-input" placeholder="Ctrl+Shift+V">
+      </div>
+      <div class="app-override-row">
+        <input type="text" id="app-override-3-process" class="process-input" placeholder="process.exe">
+        <input type="text" id="app-override-3-shortcut" class="shortcut-input" placeholder="Ctrl+V">
+      </div>
+    </section>
+
     <!-- Shortcuts -->
     <section class="settings-section">
       <h2>Shortcuts</h2>
@@ -59,6 +84,7 @@
       <div class="setting-item">
         <label for="shortcut-paste">Paste & Close</label>
         <input type="text" id="shortcut-paste" class="shortcut-input" placeholder="Ctrl+Enter">
+        <p class="hint">Shortcut within this app. Actual paste key is set in Behavior section.</p>
       </div>
       <div class="setting-item">
         <label for="shortcut-close">Close Window</label>

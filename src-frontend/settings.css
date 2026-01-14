@@ -103,6 +103,50 @@ h2 {
   margin-bottom: 12px;
 }
 
+h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #777;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.app-override-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.app-override-row .process-input {
+  flex: 1;
+  width: auto;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: "Consolas", "Yu Gothic", monospace;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  outline: none;
+}
+
+.app-override-row .shortcut-input {
+  width: 120px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: "Consolas", "Yu Gothic", monospace;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  outline: none;
+  text-align: center;
+}
+
+.app-override-row input:focus {
+  border-color: var(--accent-color);
+}
+
 
 .button-bar {
   display: flex;

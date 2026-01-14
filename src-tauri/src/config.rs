@@ -14,6 +14,9 @@ pub struct Config {
 
     #[serde(default = "default_window")]
     pub window: WindowConfig,
+
+    #[serde(default = "default_behavior")]
+    pub behavior: BehaviorConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -117,6 +120,25 @@ pub struct WindowConfig {
     pub textarea_cols: u32,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BehaviorConfig {
+    /// Shortcut to simulate for pasting (sent to target application)
+    #[serde(default = "default_simulate_paste_shortcut")]
+    pub simulate_paste_shortcut: String,
+
+    /// Per-app paste shortcut overrides
+    #[serde(default = "default_app_overrides")]
+    pub app_overrides: Vec<AppPasteOverride>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppPasteOverride {
+    /// Process name (e.g., "alacritty.exe")
+    pub process_name: String,
+    /// Shortcut to use for this app (e.g., "Ctrl+Shift+V")
+    pub shortcut: String,
+}
+
 // Default values (matching prompt-line + readline)
 fn default_shortcuts() -> Shortcuts {
     Shortcuts {
@@ -155,6 +177,34 @@ fn default_window() -> WindowConfig {
         textarea_rows: default_textarea_rows(),
         textarea_cols: default_textarea_cols(),
     }
+}
+
+fn default_behavior() -> BehaviorConfig {
+    BehaviorConfig {
+        simulate_paste_shortcut: default_simulate_paste_shortcut(),
+        app_overrides: default_app_overrides(),
+    }
+}
+
+fn default_simulate_paste_shortcut() -> String {
+    "Ctrl+V".to_string()
+}
+
+fn default_app_overrides() -> Vec<AppPasteOverride> {
+    vec![
+        AppPasteOverride {
+            process_name: "alacritty.exe".to_string(),
+            shortcut: "Ctrl+Shift+V".to_string(),
+        },
+        AppPasteOverride {
+            process_name: "wezterm-gui.exe".to_string(),
+            shortcut: "Ctrl+Shift+V".to_string(),
+        },
+        AppPasteOverride {
+            process_name: String::new(),
+            shortcut: String::new(),
+        },
+    ]
 }
 
 fn default_launch() -> String {
@@ -302,6 +352,7 @@ impl Default for Config {
             shortcuts: default_shortcuts(),
             history: default_history(),
             window: default_window(),
+            behavior: default_behavior(),
         }
     }
 }
