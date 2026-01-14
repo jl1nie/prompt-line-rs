@@ -134,10 +134,32 @@ yank = "Ctrl+y"
 max_entries = 1000
 
 [window]
-width = 600.0
-height = 300.0
-font_size = 16.0
+font_size = 14.0
+history_font_size = 12.0
+history_lines = 3
+textarea_rows = 3
+textarea_cols = 60
+
+[behavior]
+simulate_paste_shortcut = "Ctrl+V"
+
+[[behavior.app_overrides]]
+process_name = "alacritty.exe"
+shortcut = "Ctrl+Shift+V"
+
+[[behavior.app_overrides]]
+process_name = "wezterm-gui.exe"
+shortcut = "Ctrl+Shift+V"
 ```
+
+### Behaviorセクション
+
+`[behavior]`セクションでは、対象アプリケーションへのペースト方法を設定します:
+
+- **`simulate_paste_shortcut`**: デフォルトのペーストショートカット（デフォルト: `Ctrl+V`）
+- **`app_overrides`**: プロセス名に基づくアプリ別ペーストショートカット
+
+これにより、`Ctrl+V`ではなく`Ctrl+Shift+V`を使用する**Alacritty**や**WezTerm**などのターミナルエミュレータにもシームレスにペーストできます。アプリは対象アプリケーションを自動検出し、適切なショートカットを使用します。
 
 ## 履歴
 

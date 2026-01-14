@@ -134,10 +134,32 @@ yank = "Ctrl+y"
 max_entries = 1000
 
 [window]
-width = 600.0
-height = 300.0
-font_size = 16.0
+font_size = 14.0
+history_font_size = 12.0
+history_lines = 3
+textarea_rows = 3
+textarea_cols = 60
+
+[behavior]
+simulate_paste_shortcut = "Ctrl+V"
+
+[[behavior.app_overrides]]
+process_name = "alacritty.exe"
+shortcut = "Ctrl+Shift+V"
+
+[[behavior.app_overrides]]
+process_name = "wezterm-gui.exe"
+shortcut = "Ctrl+Shift+V"
 ```
+
+### Behavior Section
+
+The `[behavior]` section configures how text is pasted to target applications:
+
+- **`simulate_paste_shortcut`**: Default paste shortcut sent to applications (default: `Ctrl+V`)
+- **`app_overrides`**: Per-app paste shortcuts based on process name
+
+This allows seamless pasting into terminal emulators like **Alacritty** and **WezTerm** that use `Ctrl+Shift+V` instead of `Ctrl+V`. The app automatically detects the target application and uses the appropriate shortcut.
 
 ## History
 
