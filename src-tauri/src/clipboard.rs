@@ -7,6 +7,11 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
     let mut clipboard =
         Clipboard::new().map_err(|e| format!("Failed to access clipboard: {}", e))?;
 
+    // Clear clipboard first to remove any existing content (including images)
+    clipboard
+        .clear()
+        .map_err(|e| format!("Failed to clear clipboard: {}", e))?;
+
     clipboard
         .set_text(text.to_string())
         .map_err(|e| format!("Failed to set clipboard text: {}", e))?;
