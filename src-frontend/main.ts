@@ -207,6 +207,23 @@ class PromptLineApp {
         this.closeSearchMode();
         return;
       }
+      // Arrow keys: Navigate history (works in input element)
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this.navigateHistory(1); // +1 = older entries
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this.navigateHistory(-1); // -1 = newer entries
+        return;
+      }
+      // Ctrl+R again: Navigate to next match (bash-like behavior)
+      if (matchShortcut(e, this.shortcuts.search)) {
+        e.preventDefault();
+        this.navigateHistory(1); // +1 = older entries
+        return;
+      }
     });
 
     // Keyboard shortcuts (readline bindings + app shortcuts)
