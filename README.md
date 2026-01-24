@@ -10,6 +10,7 @@ A floating text input tool for Windows, inspired by [prompt-line](https://github
 
 - **Global Hotkey**: Launch with `Ctrl+Shift+Space` from anywhere
 - **Quick Paste**: Press `Ctrl+Enter` to copy text and paste to the previously focused app
+- **Voice Input**: Auto-trigger Windows voice input (Win+H) when window opens
 - **Readline Bindings**: Emacs-style editing shortcuts (Ctrl+A/E, Ctrl+K/U, etc.)
 - **History Navigation**: Use `Ctrl+P`/`Ctrl+N` to navigate through history
 - **History Search**: Press `Ctrl+R` to search your input history
@@ -150,6 +151,10 @@ shortcut = "Ctrl+Shift+V"
 [[behavior.app_overrides]]
 process_name = "wezterm-gui.exe"
 shortcut = "Ctrl+Shift+V"
+
+[voice]
+enabled = false
+delay_ms = 500
 ```
 
 ### Behavior Section
@@ -160,6 +165,15 @@ The `[behavior]` section configures how text is pasted to target applications:
 - **`app_overrides`**: Per-app paste shortcuts based on process name
 
 This allows seamless pasting into terminal emulators like **Alacritty** and **WezTerm** that use `Ctrl+Shift+V` instead of `Ctrl+V`. The app automatically detects the target application and uses the appropriate shortcut.
+
+### Voice Section
+
+The `[voice]` section configures automatic Windows voice input:
+
+- **`enabled`**: Enable/disable the voice input toggle in the main window (default: `false`)
+- **`delay_ms`**: Delay in milliseconds before triggering voice input (default: `500`)
+
+When enabled, a microphone toggle appears in the main window. When the toggle is ON, the app automatically triggers Windows voice input (Win+H) each time the window opens.
 
 ## History
 

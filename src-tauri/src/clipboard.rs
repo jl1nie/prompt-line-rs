@@ -24,7 +24,7 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
 #[cfg(windows)]
 pub fn simulate_paste(shortcut: &str) -> Result<(), String> {
     use windows::Win32::UI::Input::KeyboardAndMouse::{
-        SendInput, INPUT, VIRTUAL_KEY, VK_CONTROL, VK_MENU, VK_SHIFT,
+        SendInput, INPUT, VIRTUAL_KEY, VK_CONTROL, VK_LWIN, VK_MENU, VK_SHIFT,
     };
 
     // Parse shortcut string
@@ -42,6 +42,7 @@ pub fn simulate_paste(shortcut: &str) -> Result<(), String> {
             "CTRL" | "CONTROL" => modifiers.push(VK_CONTROL),
             "SHIFT" => modifiers.push(VK_SHIFT),
             "ALT" => modifiers.push(VK_MENU),
+            "WIN" | "SUPER" | "META" => modifiers.push(VK_LWIN),
             _ => {
                 // Assume it's the main key
                 main_key = Some(parse_key(&upper)?);
@@ -81,14 +82,80 @@ pub fn simulate_paste(shortcut: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Trigger Windows voice input (Win+H)
+/// Spawns a thread with delay for better system shortcut handling
+#[cfg(windows)]
+pub fn trigger_voice_input(delay_ms: u32) -> Result<(), String> {
+    std::thread::spawn(move || {
+        use std::thread::sleep;
+        use std::time::Duration;
+        use windows::Win32::UI::Input::KeyboardAndMouse::{
+            keybd_event, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
+        };
+
+        // Virtual key codes
+        const VK_LWIN: u8 = 0x5B;
+        const VK_H: u8 = 0x48;
+        const VK_CONTROL: u8 = 0x11;
+        const VK_SHIFT: u8 = 0x10;
+        const VK_MENU: u8 = 0x12; // Alt key
+
+        // Wait for window to fully settle
+        sleep(Duration::from_millis(delay_ms as u64));
+
+        unsafe {
+            // Release any modifier keys that might be held from the hotkey
+            keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+            keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);
+            keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
+            sleep(Duration::from_millis(50));
+
+            // Win key down
+            keybd_event(VK_LWIN, 0, KEYEVENTF_EXTENDEDKEY, 0);
+            sleep(Duration::from_millis(50));
+
+            // H key down
+            keybd_event(VK_H, 0, Default::default(), 0);
+            sleep(Duration::from_millis(50));
+
+            // H key up
+            keybd_event(VK_H, 0, KEYEVENTF_KEYUP, 0);
+            sleep(Duration::from_millis(50));
+
+            // Win key up
+            keybd_event(VK_LWIN, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+        }
+    });
+
+    Ok(())
+}
+
+/// Trigger Windows voice input (Win+H) - non-Windows stub
+#[cfg(not(windows))]
+pub fn trigger_voice_input(_delay_ms: u32) -> Result<(), String> {
+    Err("Voice input is only supported on Windows".to_string())
+}
+
 #[cfg(windows)]
 fn create_key_input(
     key: windows::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY,
     key_up: bool,
 ) -> windows::Win32::UI::Input::KeyboardAndMouse::INPUT {
     use windows::Win32::UI::Input::KeyboardAndMouse::{
-        INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
+        INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_EXTENDEDKEY,
+        KEYEVENTF_KEYUP, VK_LWIN, VK_RWIN,
     };
+
+    // Extended keys need KEYEVENTF_EXTENDEDKEY flag
+    let is_extended = key == VK_LWIN || key == VK_RWIN;
+
+    let mut flags = KEYBD_EVENT_FLAGS(0);
+    if is_extended {
+        flags |= KEYEVENTF_EXTENDEDKEY;
+    }
+    if key_up {
+        flags |= KEYEVENTF_KEYUP;
+    }
 
     INPUT {
         r#type: INPUT_KEYBOARD,
@@ -96,11 +163,7 @@ fn create_key_input(
             ki: KEYBDINPUT {
                 wVk: key,
                 wScan: 0,
-                dwFlags: if key_up {
-                    KEYEVENTF_KEYUP
-                } else {
-                    KEYBD_EVENT_FLAGS(0)
-                },
+                dwFlags: flags,
                 time: 0,
                 dwExtraInfo: 0,
             },
@@ -109,7 +172,9 @@ fn create_key_input(
 }
 
 #[cfg(windows)]
-fn parse_key(key: &str) -> Result<windows::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY, String> {
+fn parse_key(
+    key: &str,
+) -> Result<windows::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY, String> {
     use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
     match key {

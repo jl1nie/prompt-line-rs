@@ -10,6 +10,7 @@ Windows向けのフローティングテキスト入力ツール。[prompt-line]
 
 - **グローバルホットキー**: どこからでも`Ctrl+Shift+Space`で起動
 - **クイックペースト**: `Ctrl+Enter`でテキストをコピーして直前のアプリにペースト
+- **音声入力**: ウィンドウ表示時にWindows音声入力(Win+H)を自動起動
 - **Readlineバインディング**: Emacs風の編集ショートカット（Ctrl+A/E、Ctrl+K/Uなど）
 - **履歴ナビゲーション**: `Ctrl+P`/`Ctrl+N`で履歴を移動
 - **履歴検索**: `Ctrl+R`で入力履歴を検索
@@ -150,6 +151,10 @@ shortcut = "Ctrl+Shift+V"
 [[behavior.app_overrides]]
 process_name = "wezterm-gui.exe"
 shortcut = "Ctrl+Shift+V"
+
+[voice]
+enabled = false
+delay_ms = 500
 ```
 
 ### Behaviorセクション
@@ -160,6 +165,15 @@ shortcut = "Ctrl+Shift+V"
 - **`app_overrides`**: プロセス名に基づくアプリ別ペーストショートカット
 
 これにより、`Ctrl+V`ではなく`Ctrl+Shift+V`を使用する**Alacritty**や**WezTerm**などのターミナルエミュレータにもシームレスにペーストできます。アプリは対象アプリケーションを自動検出し、適切なショートカットを使用します。
+
+### Voiceセクション
+
+`[voice]`セクションでは、Windows音声入力の自動起動を設定します:
+
+- **`enabled`**: メインウィンドウに音声入力トグルを表示（デフォルト: `false`）
+- **`delay_ms`**: 音声入力を起動するまでの遅延（ミリ秒、デフォルト: `500`）
+
+有効にすると、メインウィンドウにマイクのトグルが表示されます。トグルがONの場合、ウィンドウを開くたびにWindows音声入力(Win+H)が自動的に起動します。
 
 ## 履歴
 

@@ -18,6 +18,8 @@ pub struct AppState {
     pub config: Mutex<config::Config>,
     /// Process name of the window that was active before showing prompt-line
     pub previous_process: Mutex<Option<String>>,
+    /// Voice input toggle state (controlled by main window toggle)
+    pub voice_toggle_on: Mutex<bool>,
 }
 
 /// Get the process name of the foreground window
@@ -25,7 +27,9 @@ pub struct AppState {
 fn get_foreground_process_name() -> Option<String> {
     use windows::Win32::Foundation::{CloseHandle, MAX_PATH};
     use windows::Win32::System::ProcessStatus::K32GetModuleBaseNameW;
-    use windows::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
+    use windows::Win32::System::Threading::{
+        OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ,
+    };
     use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
     unsafe {
@@ -40,7 +44,12 @@ fn get_foreground_process_name() -> Option<String> {
             return None;
         }
 
-        let handle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, process_id).ok()?;
+        let handle = OpenProcess(
+            PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+            false,
+            process_id,
+        )
+        .ok()?;
         if handle.is_invalid() {
             return None;
         }
@@ -173,6 +182,25 @@ fn clear_draft() -> Result<(), String> {
     Ok(())
 }
 
+/// Trigger Windows voice input (Win+H)
+#[tauri::command]
+fn trigger_voice_input(delay_ms: u32) -> Result<(), String> {
+    clipboard::trigger_voice_input(delay_ms)
+}
+
+
+/// Get voice toggle state
+#[tauri::command]
+fn get_voice_toggle(state: tauri::State<'_, AppState>) -> bool {
+    *state.voice_toggle_on.lock().unwrap()
+}
+
+/// Set voice toggle state
+#[tauri::command]
+fn set_voice_toggle(state: tauri::State<'_, AppState>, enabled: bool) {
+    *state.voice_toggle_on.lock().unwrap() = enabled;
+}
+
 /// Save configuration and apply window size
 #[tauri::command]
 fn save_config(
@@ -203,13 +231,14 @@ fn show_settings_window(app: &tauri::AppHandle) {
         return;
     }
 
-    // Create new settings window
+    // Create new settings window (always_on_top so it appears above main window)
     let _window =
         WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
             .title("Settings - prompt-line-rs")
             .inner_size(500.0, 450.0)
             .resizable(true)
             .center()
+            .always_on_top(true)
             .build();
 }
 
@@ -286,6 +315,21 @@ fn toggle_window(app: &tauri::AppHandle) {
             }
             let _ = window.show();
             let _ = window.set_focus();
+
+            // Trigger voice input if enabled in config AND toggle is on
+            if let Some(state) = app.try_state::<AppState>() {
+                let config = state.config.lock().unwrap();
+                let voice_enabled = config.voice.enabled;
+                let delay_ms = config.voice.delay_ms;
+                drop(config); // Release lock
+
+                if voice_enabled {
+                    let toggle_on = *state.voice_toggle_on.lock().unwrap();
+                    if toggle_on {
+                        let _ = clipboard::trigger_voice_input(delay_ms);
+                    }
+                }
+            }
         }
     }
 }
@@ -407,6 +451,7 @@ pub fn run() {
             history: Mutex::new(history),
             config: Mutex::new(config),
             previous_process: Mutex::new(None),
+            voice_toggle_on: Mutex::new(false),
         })
         .invoke_handler(tauri::generate_handler![
             get_history,
@@ -418,6 +463,9 @@ pub fn run() {
             save_draft,
             load_draft,
             clear_draft,
+            trigger_voice_input,
+            get_voice_toggle,
+            set_voice_toggle,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

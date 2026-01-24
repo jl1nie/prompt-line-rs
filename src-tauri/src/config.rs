@@ -17,6 +17,9 @@ pub struct Config {
 
     #[serde(default = "default_behavior")]
     pub behavior: BehaviorConfig,
+
+    #[serde(default = "default_voice")]
+    pub voice: VoiceConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -139,6 +142,17 @@ pub struct AppPasteOverride {
     pub shortcut: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VoiceConfig {
+    /// Enable automatic voice input (Win+H) when window is shown
+    #[serde(default = "default_voice_enabled")]
+    pub enabled: bool,
+
+    /// Delay in milliseconds before triggering voice input
+    #[serde(default = "default_voice_delay_ms")]
+    pub delay_ms: u32,
+}
+
 // Default values (matching prompt-line + readline)
 fn default_shortcuts() -> Shortcuts {
     Shortcuts {
@@ -184,6 +198,21 @@ fn default_behavior() -> BehaviorConfig {
         simulate_paste_shortcut: default_simulate_paste_shortcut(),
         app_overrides: default_app_overrides(),
     }
+}
+
+fn default_voice() -> VoiceConfig {
+    VoiceConfig {
+        enabled: default_voice_enabled(),
+        delay_ms: default_voice_delay_ms(),
+    }
+}
+
+fn default_voice_enabled() -> bool {
+    false
+}
+
+fn default_voice_delay_ms() -> u32 {
+    500
 }
 
 fn default_simulate_paste_shortcut() -> String {
@@ -353,6 +382,7 @@ impl Default for Config {
             history: default_history(),
             window: default_window(),
             behavior: default_behavior(),
+            voice: default_voice(),
         }
     }
 }

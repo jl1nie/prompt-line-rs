@@ -35,9 +35,15 @@ interface WindowConfig {
   textarea_cols: number;
 }
 
+interface VoiceConfig {
+  enabled: boolean;
+  delay_ms: number;
+}
+
 interface Config {
   shortcuts: Shortcuts;
   window: WindowConfig;
+  voice: VoiceConfig;
 }
 
 // Parse shortcut string like "Ctrl+A" into { ctrl, alt, shift, key }
@@ -68,6 +74,7 @@ class PromptLineApp {
   private historyList: HTMLUListElement;
   private historySearch: HTMLInputElement;
   private searchBtn: HTMLButtonElement;
+  private voiceToggle: HTMLInputElement;
   private historyEntries: HistoryEntry[] = [];
   private historyIndex = -1;
   private searchMode = false;
@@ -76,28 +83,58 @@ class PromptLineApp {
   private killRing: string = ""; // For Ctrl+Y (yank)
   private savedInput: string = ""; // For history navigation (readline behavior)
   private shortcuts!: Shortcuts;
+  private voiceEnabled: boolean = false; // config.voice.enabled - controls if toggle is visible
 
   constructor() {
     this.textarea = document.getElementById("input-text") as HTMLTextAreaElement;
     this.historyList = document.getElementById("history-list") as HTMLUListElement;
     this.historySearch = document.getElementById("history-search") as HTMLInputElement;
     this.searchBtn = document.getElementById("btn-search") as HTMLButtonElement;
+    this.voiceToggle = document.getElementById("voice-toggle") as HTMLInputElement;
 
     this.init();
   }
 
   private async init(): Promise<void> {
     await this.loadConfig();
+    await this.loadVoiceToggleState();
     this.setupEventListeners();
     this.loadHistory();
     this.loadDraft();
     this.focusTextarea();
   }
 
+  private async loadVoiceToggleState(): Promise<void> {
+    // Hide toggle if voice feature is disabled in config
+    const toggleContainer = this.voiceToggle.closest(".voice-toggle") as HTMLElement;
+    if (!this.voiceEnabled) {
+      if (toggleContainer) toggleContainer.style.display = "none";
+      return;
+    }
+    if (toggleContainer) toggleContainer.style.display = "";
+
+    // Load toggle state from backend
+    try {
+      this.voiceToggle.checked = await invoke<boolean>("get_voice_toggle");
+    } catch (error) {
+      console.error("Failed to get voice toggle state:", error);
+    }
+  }
+
+  private async updateVoiceToggleState(): Promise<void> {
+    // Save toggle state to backend
+    try {
+      await invoke("set_voice_toggle", { enabled: this.voiceToggle.checked });
+    } catch (error) {
+      console.error("Failed to set voice toggle state:", error);
+    }
+  }
+
   private async loadConfig(): Promise<void> {
     try {
       const config = await invoke<Config>("get_config");
       this.shortcuts = config.shortcuts;
+      this.voiceEnabled = config.voice?.enabled ?? false;
       this.applyWindowConfig(config.window);
     } catch (error) {
       console.error("Failed to load config:", error);
@@ -122,6 +159,7 @@ class PromptLineApp {
         delete_char: "Ctrl+d",
         yank: "Ctrl+y",
       };
+      this.voiceEnabled = false;
       // Apply default window config
       this.applyWindowConfig({ font_size: 14, history_font_size: 12, history_lines: 3, textarea_rows: 3, textarea_cols: 60 });
     }
@@ -173,6 +211,9 @@ class PromptLineApp {
     document.getElementById("btn-paste")?.addEventListener("click", () => this.handlePaste());
     document.getElementById("btn-clear")?.addEventListener("click", () => this.handleClear());
     this.searchBtn.addEventListener("click", () => this.toggleSearchMode());
+
+    // Voice input toggle
+    this.voiceToggle.addEventListener("change", () => this.updateVoiceToggleState());
 
     // Search input
     this.historySearch.addEventListener("input", () => {
@@ -354,8 +395,9 @@ class PromptLineApp {
     });
 
     // Window focus listener
-    window.addEventListener("focus", () => {
-      this.loadConfig(); // Reload config (may have changed in settings)
+    window.addEventListener("focus", async () => {
+      await this.loadConfig(); // Reload config (may have changed in settings)
+      await this.loadVoiceToggleState(); // Update toggle visibility
       this.loadHistory();
       this.focusTextarea();
     });

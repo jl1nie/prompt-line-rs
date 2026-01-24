@@ -46,11 +46,17 @@ interface BehaviorConfig {
   app_overrides: AppPasteOverride[];
 }
 
+interface VoiceConfig {
+  enabled: boolean;
+  delay_ms: number;
+}
+
 interface Config {
   shortcuts: Shortcuts;
   history: HistoryConfig;
   window: WindowConfig;
   behavior: BehaviorConfig;
+  voice: VoiceConfig;
 }
 
 class SettingsApp {
@@ -96,6 +102,10 @@ class SettingsApp {
   private appOverride3Process: HTMLInputElement;
   private appOverride3Shortcut: HTMLInputElement;
 
+  // Voice input
+  private voiceEnabled: HTMLInputElement;
+  private voiceDelay: HTMLInputElement;
+
   constructor() {
     this.fontSize = document.getElementById("font-size") as HTMLInputElement;
     this.historyFontSize = document.getElementById("history-font-size") as HTMLInputElement;
@@ -135,6 +145,10 @@ class SettingsApp {
     this.appOverride2Shortcut = document.getElementById("app-override-2-shortcut") as HTMLInputElement;
     this.appOverride3Process = document.getElementById("app-override-3-process") as HTMLInputElement;
     this.appOverride3Shortcut = document.getElementById("app-override-3-shortcut") as HTMLInputElement;
+
+    // Voice input
+    this.voiceEnabled = document.getElementById("voice-enabled") as HTMLInputElement;
+    this.voiceDelay = document.getElementById("voice-delay") as HTMLInputElement;
 
     this.setupEventListeners();
     this.loadConfig();
@@ -216,6 +230,10 @@ class SettingsApp {
       this.appOverride3Process.value = overrides[2].process_name || "";
       this.appOverride3Shortcut.value = overrides[2].shortcut || "";
     }
+
+    // Voice settings
+    this.voiceEnabled.checked = this.config.voice?.enabled ?? false;
+    this.voiceDelay.value = String(this.config.voice?.delay_ms ?? 500);
   }
 
   private async handleSave(): Promise<void> {
@@ -271,6 +289,10 @@ class SettingsApp {
             shortcut: this.appOverride3Shortcut.value,
           },
         ],
+      },
+      voice: {
+        enabled: this.voiceEnabled.checked,
+        delay_ms: parseInt(this.voiceDelay.value, 10) || 500,
       },
     };
 

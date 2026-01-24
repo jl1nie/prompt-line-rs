@@ -73,6 +73,21 @@
       </div>
     </section>
 
+    <!-- Voice Input -->
+    <section class="settings-section">
+      <h2>Voice Input</h2>
+      <p class="hint">Automatically trigger Windows voice input (Win+H) when window opens.</p>
+      <div class="setting-item">
+        <label for="voice-enabled">Enable Voice Input</label>
+        <input type="checkbox" id="voice-enabled">
+      </div>
+      <div class="setting-item">
+        <label for="voice-delay">Delay (ms)</label>
+        <input type="number" id="voice-delay" min="100" max="2000" step="50">
+        <p class="hint">Time to wait before triggering voice input (default: 500ms)</p>
+      </div>
+    </section>
+
     <!-- Shortcuts -->
     <section class="settings-section">
       <h2>Shortcuts</h2>

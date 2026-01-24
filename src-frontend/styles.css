@@ -256,6 +256,37 @@ button kbd {
   border-radius: 3px;
 }
 
+/* Voice input toggle */
+.voice-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.voice-toggle:hover {
+  background-color: var(--button-hover);
+}
+
+.voice-toggle input {
+  display: none;
+}
+
+.voice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.15s;
+}
+
+.voice-toggle input:checked + .voice-icon {
+  color: var(--accent-color);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
